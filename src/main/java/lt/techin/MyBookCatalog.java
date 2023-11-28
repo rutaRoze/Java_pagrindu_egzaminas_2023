@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.groupingBy;
+
 public class MyBookCatalog implements BookCatalog {
 
     private Book book;
@@ -83,7 +85,7 @@ public class MyBookCatalog implements BookCatalog {
         Book newestBookByAuthor = booksList.values()
                 .stream()
                 .filter(book1 -> book1.getPublisher().equals(publisher))
-                .sorted(Comparator.comparingInt(Book::getPublicationYear))
+                .sorted(Comparator.comparingInt(Book::getPublicationYear).reversed())
                 .findFirst()
                 .orElseThrow(() -> new BookNotFoundException("Book not found"));
 
@@ -106,9 +108,11 @@ public class MyBookCatalog implements BookCatalog {
     @Override
     public Map<String, List<Book>> groupBooksByPublisher() {
 
-        List<Book> booksByPublisher = new ArrayList<>();
+        Map<String, List<Book>> groupedBooksByPublisher = booksList.values()
+                .stream()
+                .collect(groupingBy(Book::getPublisher));
 
-        return null;
+        return groupedBooksByPublisher;
     }
 
     @Override
@@ -129,5 +133,20 @@ public class MyBookCatalog implements BookCatalog {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return totalPrice;
+    }
+
+    public Book getBookByTitle(String bookTitle) {
+
+        Book bookByTitle = booksList.values()
+                .stream()
+                .filter(b -> b.getTitle().equalsIgnoreCase(bookTitle))
+                .findAny()
+                .get();
+
+        return bookByTitle;
+    }
+
+    public Map<String, Book> getBooksList() {
+        return this.booksList;
     }
 }
