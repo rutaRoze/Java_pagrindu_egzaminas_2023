@@ -2,12 +2,10 @@ package lt.techin;
 
 import lt.techin.library.Book;
 import lt.techin.library.BookCatalog;
+import lt.techin.library.BookNotFoundException;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -35,6 +33,10 @@ public class MyBookCatalog implements BookCatalog {
 
     @Override
     public Book getBookByIsbn(String isbn) {
+        if (!booksList.containsKey(isbn)) {
+            throw new BookNotFoundException("Book not found");
+        }
+
         Book searchedBook = booksList.get(isbn);
 
         return searchedBook;
@@ -46,7 +48,7 @@ public class MyBookCatalog implements BookCatalog {
         List<Book> books = new ArrayList<>();
 
         for (Book b : booksList.values()) {
-            if(b.getAuthors().stream().anyMatch(a -> a.getName().equals(author))) {
+            if (b.getAuthors().stream().anyMatch(a -> a.getName().equals(author))) {
                 books.add(b);
             }
         }
@@ -56,42 +58,76 @@ public class MyBookCatalog implements BookCatalog {
 
     @Override
     public int getTotalNumberOfBooks() {
+
         return booksList.size();
     }
 
     @Override
     public boolean isBookInCatalog(String isbn) {
         boolean isInCatalog = booksList.containsKey(isbn);
+
         return isInCatalog;
     }
 
     @Override
     public boolean isBookAvailable(String isbn) {
-        return false;
+        boolean isBookAvailable = booksList.values()
+                .stream()
+                .anyMatch(Book::isAvailable);
+
+        return isBookAvailable;
     }
 
     @Override
-    public Book findNewestBookByPublisher(String s) {
-        return null;
+    public Book findNewestBookByPublisher(String publisher) {
+        Book newestBookByAuthor = booksList.values()
+                .stream()
+                .filter(book1 -> book1.getPublisher().equals(publisher))
+                .sorted(Comparator.comparingInt(Book::getPublicationYear))
+                .findFirst()
+                .orElseThrow(() -> new BookNotFoundException("Book not found"));
+
+        return newestBookByAuthor;
     }
 
     @Override
     public List<Book> getSortedBooks() {
-        return null;
+
+        List<Book> sortedBooks = booksList.values()
+                .stream()
+                .sorted(Comparator.comparing(Book::getPublicationYear)
+                        .thenComparing(Book::getTitle)
+                        .thenComparing(Book::getPageCount))
+                .toList();
+
+        return sortedBooks;
     }
 
     @Override
     public Map<String, List<Book>> groupBooksByPublisher() {
+
+        List<Book> booksByPublisher = new ArrayList<>();
+
         return null;
     }
 
     @Override
     public List<Book> filterBooks(Predicate<Book> predicate) {
-        return null;
+        List<Book> filteredBookList = booksList.values()
+                .stream()
+                .filter(b -> predicate.test(b))
+                .collect(Collectors.toList());
+
+        return filteredBookList;
     }
 
     @Override
     public BigDecimal calculateTotalPrice() {
-        return null;
+        BigDecimal totalPrice = booksList.values()
+                .stream()
+                .map(Book::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalPrice;
     }
 }
