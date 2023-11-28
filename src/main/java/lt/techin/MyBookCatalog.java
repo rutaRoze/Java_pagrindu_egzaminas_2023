@@ -46,31 +46,27 @@ public class MyBookCatalog implements BookCatalog {
         List<Book> books = new ArrayList<>();
 
         for (Book b : booksList.values()) {
-            if(b.getAuthors().contains(author)) {
+            if(b.getAuthors().stream().anyMatch(a -> a.getName().equals(author))) {
                 books.add(b);
             }
         }
 
-
-//        List<Book> books = booksList.values()
-//                .stream()
-//                .flatMap(b -> b.getAuthors().stream())
-//                .filter(b -> b.equals(author)).toList();
         return books;
     }
 
     @Override
     public int getTotalNumberOfBooks() {
-        return 0;
+        return booksList.size();
     }
 
     @Override
-    public boolean isBookInCatalog(String s) {
-        return false;
+    public boolean isBookInCatalog(String isbn) {
+        boolean isInCatalog = booksList.containsKey(isbn);
+        return isInCatalog;
     }
 
     @Override
-    public boolean isBookAvailable(String s) {
+    public boolean isBookAvailable(String isbn) {
         return false;
     }
 
