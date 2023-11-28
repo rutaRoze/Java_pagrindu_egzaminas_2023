@@ -146,7 +146,4 @@ public class MyBookCatalog implements BookCatalog {
         return bookByTitle;
     }
 
-    public Map<String, Book> getBooksList() {
-        return this.booksList;
-    }
 }
